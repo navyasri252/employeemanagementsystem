@@ -1,11 +1,15 @@
 services:
   - type: web
-    name: employee-management
-    env: python
-    plan: starter
-    buildCommand: python3 -m pip install -r requirements.txt
-    startCommand: python3 -m gunicorn employee_management.wsgi:application --bind 0.0.0.0:$PORT --log-file -
+    name: hospital-portal-demo
+    runtime: python
+    rootDir: .
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate && python create_superuser.py"
+    startCommand: "python manage.py migrate && python create_superuser.py && gunicorn employee_management.wsgi:application"
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: WEB_CONCURRENCY
+        value: 2  # IMPORTANT: Caps Gunicorn workers at 2 to stay under 512MB RAM!
       - key: DJANGO_SECRET_KEY
         value: "replace-me-with-a-secure-key"
       - key: DJANGO_SUPERUSER_USERNAME
